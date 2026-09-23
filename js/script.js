@@ -6,18 +6,17 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     /* =====================================================
-       01. ELEMENTS
+       PAGE READY
     ===================================================== */
 
-    const header = document.getElementById("siteHeader");
-    const mobileMenuBtn = document.getElementById("mobileMenuBtn");
-    const mobileNav = document.getElementById("mobileNav");
-    const currentYear = document.getElementById("currentYear");
+    document.body.classList.add("page-ready");
 
 
     /* =====================================================
-       02. CURRENT YEAR
+       CURRENT YEAR
     ===================================================== */
+
+    const currentYear = document.getElementById("currentYear");
 
     if (currentYear) {
         currentYear.textContent = new Date().getFullYear();
@@ -25,10 +24,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
-       03. STICKY HEADER
+       HEADER SCROLL EFFECT
     ===================================================== */
 
-    function handleHeader() {
+    const header = document.getElementById("siteHeader");
+
+    const handleHeaderScroll = () => {
 
         if (!header) return;
 
@@ -37,45 +38,43 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             header.classList.remove("scrolled");
         }
-    }
 
-    handleHeader();
+    };
 
-    window.addEventListener("scroll", handleHeader, {
+    handleHeaderScroll();
+
+    window.addEventListener("scroll", handleHeaderScroll, {
         passive: true
     });
 
 
     /* =====================================================
-       04. MOBILE MENU
+       MOBILE MENU
     ===================================================== */
 
-    if (mobileMenuBtn && mobileNav) {
+    const mobileMenuToggle =
+        document.getElementById("mobileMenuToggle");
 
-        mobileMenuBtn.addEventListener("click", () => {
+    const mobileNav =
+        document.getElementById("mobileNav");
+
+
+    if (mobileMenuToggle && mobileNav) {
+
+        mobileMenuToggle.addEventListener("click", () => {
 
             const isOpen =
-                mobileNav.classList.toggle("active");
+                mobileNav.classList.toggle("open");
 
-            mobileMenuBtn.classList.toggle(
-                "active",
-                isOpen
-            );
-
-            mobileMenuBtn.setAttribute(
+            mobileMenuToggle.setAttribute(
                 "aria-expanded",
-                String(isOpen)
-            );
-
-            document.body.classList.toggle(
-                "menu-open",
-                isOpen
+                isOpen ? "true" : "false"
             );
 
         });
 
 
-        /* Close menu when clicking navigation link */
+        /* Close menu when clicking a link */
 
         const mobileLinks =
             mobileNav.querySelectorAll("a");
@@ -84,17 +83,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             link.addEventListener("click", () => {
 
-                mobileNav.classList.remove("active");
+                mobileNav.classList.remove("open");
 
-                mobileMenuBtn.classList.remove("active");
-
-                mobileMenuBtn.setAttribute(
+                mobileMenuToggle.setAttribute(
                     "aria-expanded",
                     "false"
-                );
-
-                document.body.classList.remove(
-                    "menu-open"
                 );
 
             });
@@ -106,22 +99,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         document.addEventListener("keydown", (event) => {
 
-            if (
-                event.key === "Escape" &&
-                mobileNav.classList.contains("active")
-            ) {
+            if (event.key === "Escape") {
 
-                mobileNav.classList.remove("active");
+                mobileNav.classList.remove("open");
 
-                mobileMenuBtn.classList.remove("active");
-
-                mobileMenuBtn.setAttribute(
+                mobileMenuToggle.setAttribute(
                     "aria-expanded",
                     "false"
-                );
-
-                document.body.classList.remove(
-                    "menu-open"
                 );
 
             }
@@ -132,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
-       05. SCROLL REVEAL ANIMATION
+       SCROLL REVEAL ANIMATIONS
     ===================================================== */
 
     const revealElements =
@@ -150,7 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         if (entry.isIntersecting) {
 
                             entry.target.classList.add(
-                                "visible"
+                                "is-visible"
                             );
 
                             observer.unobserve(
@@ -179,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         revealElements.forEach((element) => {
 
-            element.classList.add("visible");
+            element.classList.add("is-visible");
 
         });
 
@@ -187,34 +171,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
-       06. ANIMATED COUNTERS
+       COUNTERS
     ===================================================== */
 
     const counters =
-        document.querySelectorAll(
-            ".counter-number[data-target]"
-        );
+        document.querySelectorAll(".counter");
 
 
-    function animateCounter(counter) {
+    const animateCounter = (counter) => {
 
         const target =
-            Number(counter.dataset.target);
+            Number(counter.getAttribute("data-target"));
 
-        if (
-            Number.isNaN(target) ||
-            target <= 0
-        ) {
+        if (!Number.isFinite(target)) {
             return;
         }
 
-
-        const duration = 1800;
+        const duration = 1600;
 
         const startTime = performance.now();
 
 
-        function updateCounter(currentTime) {
+        const updateCounter = (currentTime) => {
 
             const elapsed =
                 currentTime - startTime;
@@ -224,7 +202,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
             /*
-             * Ease-out animation
+             * Smooth easing
              */
 
             const eased =
@@ -252,12 +230,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
             }
 
-        }
+        };
 
 
         requestAnimationFrame(updateCounter);
 
-    }
+    };
 
 
     if ("IntersectionObserver" in window) {
@@ -268,15 +246,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     entries.forEach((entry) => {
 
-                        if (entry.isIntersecting) {
+                        if (
+                            entry.isIntersecting
+                        ) {
 
-                            const counter =
-                                entry.target;
-
-                            animateCounter(counter);
+                            animateCounter(
+                                entry.target
+                            );
 
                             observer.unobserve(
-                                counter
+                                entry.target
                             );
 
                         }
@@ -285,7 +264,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 },
                 {
-                    threshold: 0.5
+                    threshold: 0.4
                 }
             );
 
@@ -296,11 +275,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
         });
 
+    } else {
+
+        counters.forEach((counter) => {
+
+            const target =
+                Number(
+                    counter.getAttribute(
+                        "data-target"
+                    )
+                );
+
+            counter.textContent =
+                target.toLocaleString("en-IN");
+
+        });
+
     }
 
 
     /* =====================================================
-       07. SMOOTH ANCHOR LINKS
+       SMOOTH ANCHOR LINKS
     ===================================================== */
 
     const anchorLinks =
@@ -325,11 +320,11 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
 
-            const target =
+            const targetElement =
                 document.querySelector(targetId);
 
 
-            if (!target) {
+            if (!targetElement) {
                 return;
             }
 
@@ -337,9 +332,21 @@ document.addEventListener("DOMContentLoaded", () => {
             event.preventDefault();
 
 
-            target.scrollIntoView({
-                behavior: "smooth",
-                block: "start"
+            const headerHeight =
+                header
+                    ? header.offsetHeight
+                    : 0;
+
+
+            const targetPosition =
+                targetElement.getBoundingClientRect().top +
+                window.scrollY -
+                headerHeight;
+
+
+            window.scrollTo({
+                top: targetPosition,
+                behavior: "smooth"
             });
 
         });
@@ -348,7 +355,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
-       08. CONTACT FORM
+       CONTACT FORM → WHATSAPP
     ===================================================== */
 
     const contactForm =
@@ -365,24 +372,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
                 const name =
-                    document.getElementById("name")?.value.trim();
+                    document.getElementById("name")
+                    ?.value
+                    .trim() || "";
+
 
                 const business =
-                    document.getElementById("business")?.value.trim();
+                    document.getElementById("business")
+                    ?.value
+                    .trim() || "";
+
 
                 const phone =
-                    document.getElementById("phone")?.value.trim();
+                    document.getElementById("phone")
+                    ?.value
+                    .trim() || "";
+
 
                 const service =
-                    document.getElementById("service")?.value;
+                    document.getElementById("service")
+                    ?.value
+                    .trim() || "";
+
 
                 const message =
-                    document.getElementById("message")?.value.trim();
+                    document.getElementById("message")
+                    ?.value
+                    .trim() || "";
 
-
-                /*
-                 * Basic validation
-                 */
 
                 if (
                     !name ||
@@ -401,32 +418,25 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
 
-                /*
-                 * Temporary WhatsApp enquiry flow.
-                 *
-                 * Later this can be replaced with a proper
-                 * backend/form service without changing the UI.
-                 */
-
-                const whatsappNumber =
-                    "916375637357";
-
-
                 const whatsappMessage =
-                    `Hi Chirag Media House,
+`Hello Chirag Media House,
+
+I would like to discuss a project.
 
 Name: ${name}
 Business: ${business}
 Phone: ${phone}
-Service: ${service}
+Service Required: ${service}
 
-Message:
+Project Details:
 ${message}`;
 
 
                 const whatsappURL =
-                    `https://wa.me/${whatsappNumber}?text=` +
-                    encodeURIComponent(whatsappMessage);
+                    "https://wa.me/916375637357?text=" +
+                    encodeURIComponent(
+                        whatsappMessage
+                    );
 
 
                 window.open(
@@ -442,7 +452,7 @@ ${message}`;
 
 
     /* =====================================================
-       09. IMAGE ERROR HANDLING
+       IMAGE ERROR HANDLING
     ===================================================== */
 
     const images =
@@ -453,9 +463,19 @@ ${message}`;
 
         image.addEventListener("error", () => {
 
-            image.classList.add(
-                "image-not-found"
-            );
+            image.style.display = "none";
+
+            const parent =
+                image.parentElement;
+
+
+            if (parent) {
+
+                parent.classList.add(
+                    "image-missing"
+                );
+
+            }
 
         });
 
@@ -463,59 +483,7 @@ ${message}`;
 
 
     /* =====================================================
-       10. RESIZE HANDLING
-    ===================================================== */
-
-    let resizeTimer;
-
-
-    window.addEventListener(
-        "resize",
-        () => {
-
-            clearTimeout(resizeTimer);
-
-
-            resizeTimer = setTimeout(() => {
-
-                /*
-                 * Close mobile menu if viewport becomes
-                 * desktop size.
-                 */
-
-                if (
-                    window.innerWidth > 900 &&
-                    mobileNav &&
-                    mobileNav.classList.contains("active")
-                ) {
-
-                    mobileNav.classList.remove(
-                        "active"
-                    );
-
-                    mobileMenuBtn?.classList.remove(
-                        "active"
-                    );
-
-                    mobileMenuBtn?.setAttribute(
-                        "aria-expanded",
-                        "false"
-                    );
-
-                    document.body.classList.remove(
-                        "menu-open"
-                    );
-
-                }
-
-            }, 150);
-
-        }
-    );
-
-
-    /* =====================================================
-       11. ACTIVE NAVIGATION
+       ACTIVE NAVIGATION
     ===================================================== */
 
     const sections =
@@ -523,9 +491,10 @@ ${message}`;
             "main section[id]"
         );
 
+
     const navLinks =
         document.querySelectorAll(
-            ".main-nav a"
+            '.desktop-nav a[href^="#"]'
         );
 
 
@@ -547,15 +516,10 @@ ${message}`;
 
 
                         const currentId =
-                            entry.target.getAttribute("id");
+                            entry.target.id;
 
 
                         navLinks.forEach((link) => {
-
-                            link.classList.remove(
-                                "active"
-                            );
-
 
                             const href =
                                 link.getAttribute("href");
@@ -570,6 +534,12 @@ ${message}`;
                                     "active"
                                 );
 
+                            } else {
+
+                                link.classList.remove(
+                                    "active"
+                                );
+
                             }
 
                         });
@@ -578,8 +548,7 @@ ${message}`;
 
                 },
                 {
-                    rootMargin:
-                        "-25% 0px -65% 0px"
+                    threshold: 0.35
                 }
             );
 
@@ -594,7 +563,27 @@ ${message}`;
 
 
     /* =====================================================
-       12. PHONE NUMBER NORMALIZATION
+       EXTERNAL LINKS
+    ===================================================== */
+
+    const externalLinks =
+        document.querySelectorAll(
+            'a[target="_blank"]'
+        );
+
+
+    externalLinks.forEach((link) => {
+
+        link.setAttribute(
+            "rel",
+            "noopener noreferrer"
+        );
+
+    });
+
+
+    /* =====================================================
+       PHONE LINK
     ===================================================== */
 
     const phoneLinks =
@@ -614,26 +603,22 @@ ${message}`;
 
 
     /* =====================================================
-       13. EXTERNAL LINKS
+       CLOSE MOBILE MENU ON RESIZE
     ===================================================== */
 
-    const externalLinks =
-        document.querySelectorAll(
-            'a[target="_blank"]'
-        );
+    window.addEventListener("resize", () => {
 
+        if (
+            window.innerWidth > 900 &&
+            mobileNav &&
+            mobileMenuToggle
+        ) {
 
-    externalLinks.forEach((link) => {
+            mobileNav.classList.remove("open");
 
-        const rel =
-            link.getAttribute("rel") || "";
-
-
-        if (!rel.includes("noopener")) {
-
-            link.setAttribute(
-                "rel",
-                `${rel} noopener noreferrer`.trim()
+            mobileMenuToggle.setAttribute(
+                "aria-expanded",
+                "false"
             );
 
         }
@@ -642,11 +627,11 @@ ${message}`;
 
 
     /* =====================================================
-       14. PAGE READY
+       CONSOLE MESSAGE
     ===================================================== */
 
-    document.body.classList.add(
-        "page-ready"
+    console.log(
+        "Chirag Media House website loaded successfully."
     );
 
 });
